@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gap/gap.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:posyandu_app/modules/puskesmas/controllers/puskesmas_dashboard_controller.dart';
+import 'package:posyandu_app/modules/puskesmas/widgets/puskesmas_info_card.dart';
+import 'package:posyandu_app/modules/puskesmas/widgets/puskesmas_statistics.dart';
+import 'package:posyandu_app/shared/widgets/dashboard/dashboard_shimmer.dart';
 
 import 'package:posyandu_app/app/theme/app_colors.dart';
-
-import '../controllers/puskesmas_dashboard_controller.dart';
-import '../models/puskesmas_dashboard_model.dart';
 
 class PuskesmasDashboardView extends GetView<PuskesmasDashboardController> {
   const PuskesmasDashboardView({super.key});
@@ -38,15 +38,15 @@ class PuskesmasDashboardView extends GetView<PuskesmasDashboardController> {
                     const Gap(16),
 
                     if (loading && data == null)
-                      const _DashboardShimmer()
+                      const DashboardShimmer()
                     else if (error.isNotEmpty && data == null)
                       _buildError(error)
                     else if (data != null)
-                      _buildStatistics(data),
+                      PuskesmasStatistics(data: data),
 
                     const Gap(24),
 
-                    _buildInfoCard(),
+                    PuskesmasInfoCard(),
                   ]),
                 ),
               ),
@@ -161,103 +161,6 @@ class PuskesmasDashboardView extends GetView<PuskesmasDashboardController> {
     );
   }
 
-  Widget _buildStatistics(PuskesmasDashboardModel data) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                title: 'Desa',
-                value: data.totalDesa,
-                subtitle: 'Wilayah kerja',
-                icon: Icons.location_city_rounded,
-                color: const Color(0xFF1976D2),
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: _StatCard(
-                title: 'Posyandu',
-                value: data.totalPosyandu,
-                subtitle: 'Unit pelayanan',
-                icon: Icons.health_and_safety_rounded,
-                color: const Color(0xFF26A69A),
-              ),
-            ),
-          ],
-        ),
-        const Gap(12),
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                title: 'Warga',
-                value: data.totalWarga,
-                subtitle: 'Terdaftar',
-                icon: Icons.people_alt_rounded,
-                color: const Color(0xFF8E65C5),
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: _StatCard(
-                title: 'Kegiatan',
-                value: data.totalKegiatan,
-                subtitle: 'Tercatat',
-                icon: Icons.event_note_rounded,
-                color: const Color(0xFFF39C35),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard() {
-    return Container(
-      padding: const EdgeInsets.all(17),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 21),
-          Gap(12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Informasi Wilayah',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                Gap(5),
-                Text(
-                  'Data statistik mencakup seluruh desa dan Posyandu '
-                  'yang terdaftar dalam wilayah kerja Puskesmas.',
-                  style: TextStyle(
-                    fontSize: 11,
-                    height: 1.5,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildError(String message) {
     return Container(
       width: double.infinity,
@@ -299,120 +202,6 @@ class PuskesmasDashboardView extends GetView<PuskesmasDashboardController> {
             label: const Text('Coba lagi'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final String title;
-  final int value;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-
-  const _StatCard({
-    required this.title,
-    required this.value,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 39,
-            height: 39,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 21),
-          ),
-          const Gap(17),
-          Text(
-            '$value',
-            style: const TextStyle(
-              fontSize: 27,
-              height: 1.1,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const Gap(5),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const Gap(3),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 10,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DashboardShimmer extends StatelessWidget {
-  const _DashboardShimmer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: const Color(0xFFE9EEF4),
-      highlightColor: Colors.white,
-      child: Column(
-        children: List.generate(2, (row) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: row == 0 ? 12 : 0),
-            child: Row(
-              children: List.generate(2, (column) {
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      right: column == 0 ? 6 : 0,
-                      left: column == 1 ? 6 : 0,
-                    ),
-                    child: Container(
-                      height: 157,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          );
-        }),
       ),
     );
   }

@@ -20,7 +20,7 @@ class PosyanduApp extends StatelessWidget {
       title: 'Posyandu',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      initialRoute: AppRoutes.dashboardPuskesmas,
+      initialRoute: AppRoutes.session,
       getPages: AppPages.pages,
     );
   }
