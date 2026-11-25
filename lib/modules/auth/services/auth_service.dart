@@ -19,10 +19,8 @@ class AuthService {
 
   Future<void> logout() async {
     try {
-      await _dio.post('/auth/logout');
+      await _dio.post('/logout');
     } on DioException catch (e) {
-      // Token lokal tetap harus dihapus oleh controller.
-      // Error selain 401 tetap diteruskan.
       if (e.response?.statusCode != 401) {
         throw Exception(_extractErrorMessage(e));
       }

@@ -7,6 +7,7 @@ class DashboardHeader extends StatelessWidget {
   final String subtitle;
   final String? badge;
   final IconData icon;
+  final Widget? trailing;
 
   const DashboardHeader({
     super.key,
@@ -14,6 +15,7 @@ class DashboardHeader extends StatelessWidget {
     required this.subtitle,
     this.badge,
     this.icon = Icons.dashboard_rounded,
+    this.trailing,
   });
 
   @override
@@ -23,6 +25,7 @@ class DashboardHeader extends StatelessWidget {
       subtitle: subtitle,
       badge: badge,
       icon: icon,
+      trailing: trailing,
     );
   }
 }

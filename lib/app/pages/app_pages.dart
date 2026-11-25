@@ -9,6 +9,8 @@ import 'package:posyandu_app/modules/home/bindings/home_binding.dart';
 import 'package:posyandu_app/modules/home/views/home_view.dart';
 import 'package:posyandu_app/modules/kader/bindings/kader_binding.dart';
 import 'package:posyandu_app/modules/kader/views/kader_dashboard_view.dart';
+import 'package:posyandu_app/modules/profile/bindings/profile_binding.dart';
+import 'package:posyandu_app/modules/profile/views/profile_view.dart';
 import 'package:posyandu_app/modules/puskesmas/bindings/puskesmas_binding.dart';
 import 'package:posyandu_app/modules/puskesmas/views/puskesmas_dashboard_view.dart';
 
@@ -25,6 +27,11 @@ class AppPages {
       name: AppRoutes.session,
       page: () => const SessionView(),
       binding: SessionBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.profile,
+      page: () => const ProfileView(),
+      binding: ProfileBinding(),
     ),
     GetPage(
       name: AppRoutes.login,
