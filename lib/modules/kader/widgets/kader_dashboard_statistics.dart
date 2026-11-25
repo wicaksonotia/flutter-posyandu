@@ -1,59 +1,47 @@
 import 'package:flutter/material.dart';
-
-import 'package:posyandu_app/shared/widgets/dashboard/dashboard_section_title.dart';
-import 'package:posyandu_app/shared/widgets/dashboard/dashboard_stat_card.dart';
-import 'package:posyandu_app/shared/widgets/dashboard/dashboard_stat_grid.dart';
-
-import '../models/kader_dashboard_model.dart';
+import 'package:posyandu_app/shared/widgets/dashboard/dashboard_stats_panel.dart';
 
 class KaderDashboardStatistics extends StatelessWidget {
-  final KaderDashboardModel data;
+  final int totalWarga;
+  final int totalKegiatan;
+  final int kunjunganHariIni;
+  final int antreanMenunggu;
 
-  const KaderDashboardStatistics({super.key, required this.data});
+  const KaderDashboardStatistics({
+    super.key,
+    required this.totalWarga,
+    required this.totalKegiatan,
+    required this.kunjunganHariIni,
+    required this.antreanMenunggu,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final statistics = data.statistics;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const DashboardSectionTitle(
-          title: 'Aktivitas Pelayanan',
-          subtitle: 'Ringkasan data Posyandu Anda',
+    return DashboardStatsPanel(
+      mode: DashboardStatsPanelMode.summary,
+      total: totalWarga,
+      totalTitle: 'Total Warga',
+      totalSubtitle: 'Warga yang terdaftar',
+      totalIcon: Icons.people_alt_rounded,
+      chartTitle: 'Ringkasan Aktivitas',
+      items: const [
+        DashboardStatItem(
+          title: 'Kegiatan',
+          value: 0,
+          color: Colors.blue,
+          icon: Icons.event_available_rounded,
         ),
-        const SizedBox(height: 14),
-        DashboardStatGrid(
-          items: [
-            DashboardStatCard(
-              title: 'Total Warga',
-              value: statistics.totalWarga.toString(),
-              description: 'Warga terdaftar',
-              icon: Icons.people_alt_rounded,
-              color: const Color(0xFF1976D2),
-            ),
-            DashboardStatCard(
-              title: 'Kegiatan',
-              value: statistics.totalKegiatan.toString(),
-              description: 'Total kegiatan',
-              icon: Icons.event_note_rounded,
-              color: const Color(0xFF26A69A),
-            ),
-            DashboardStatCard(
-              title: 'Kunjungan Hari Ini',
-              value: statistics.kunjunganHariIni.toString(),
-              description: 'Kunjungan tercatat',
-              icon: Icons.assignment_turned_in_rounded,
-              color: const Color(0xFF8E65C5),
-            ),
-            DashboardStatCard(
-              title: 'Antrean Menunggu',
-              value: statistics.antreanMenunggu.toString(),
-              description: 'Belum diperiksa',
-              icon: Icons.hourglass_top_rounded,
-              color: const Color(0xFFF39C35),
-            ),
-          ],
+        DashboardStatItem(
+          title: 'Kunjungan Hari Ini',
+          value: 0,
+          color: Colors.green,
+          icon: Icons.people_alt_rounded,
+        ),
+        DashboardStatItem(
+          title: 'Antrean Menunggu',
+          value: 0,
+          color: Colors.orange,
+          icon: Icons.hourglass_top_rounded,
         ),
       ],
     );

@@ -6,15 +6,19 @@ import 'package:posyandu_app/app/theme/app_colors.dart';
 
 import 'dashboard_stats_shimmer.dart';
 
+enum DashboardStatsPanelMode { distribution, summary }
+
 class DashboardStatItem {
   final String title;
   final int value;
   final Color color;
+  final IconData? icon;
 
   const DashboardStatItem({
     required this.title,
     required this.value,
     required this.color,
+    this.icon,
   });
 }
 
@@ -31,6 +35,7 @@ class DashboardStatsPanel extends StatelessWidget {
   final VoidCallback? onRetry;
 
   final IconData totalIcon;
+  final DashboardStatsPanelMode mode;
 
   const DashboardStatsPanel({
     super.key,
@@ -43,6 +48,7 @@ class DashboardStatsPanel extends StatelessWidget {
     this.errorMessage = '',
     this.onRetry,
     this.totalIcon = Icons.people_alt_rounded,
+    this.mode = DashboardStatsPanelMode.distribution,
   });
 
   @override
@@ -56,14 +62,6 @@ class DashboardStatsPanel extends StatelessWidget {
     if (errorMessage.isNotEmpty && !hasData) {
       return _StatsError(message: errorMessage, onRetry: onRetry);
     }
-
-    final groupedTotal = items.fold<int>(
-      0,
-      (sum, item) => sum + math.max(0, item.value),
-    );
-
-    final other = math.max(0, total - groupedTotal);
-    final chartTotal = math.max(total, groupedTotal);
 
     return Container(
       width: double.infinity,
@@ -83,143 +81,217 @@ class DashboardStatsPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Total
-          Row(
+          _TotalHeader(
+            total: total,
+            title: totalTitle,
+            subtitle: totalSubtitle,
+            icon: totalIcon,
+            isLoading: isLoading,
+          ),
+          const Gap(22),
+
+          if (mode == DashboardStatsPanelMode.distribution)
+            _buildDistribution()
+          else
+            _buildSummary(),
+        ],
+      ),
+    );
+  }
+
+  // Mode distribusi: nilai item merupakan bagian dari total.
+  Widget _buildDistribution() {
+    final groupedTotal = items.fold<int>(
+      0,
+      (sum, item) => sum + math.max(0, item.value),
+    );
+
+    final other = math.max(0, total - groupedTotal);
+    final chartTotal = math.max(total, groupedTotal);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          chartTitle,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const Gap(12),
+
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: SizedBox(
+            height: 13,
+            child: Row(
+              children: [
+                if (chartTotal == 0)
+                  Expanded(child: Container(color: AppColors.border))
+                else ...[
+                  ...items
+                      .where((item) => item.value > 0)
+                      .map(
+                        (item) => Expanded(
+                          flex: item.value,
+                          child: Container(color: item.color),
+                        ),
+                      ),
+                  if (other > 0)
+                    Expanded(
+                      flex: other,
+                      child: Container(color: AppColors.textSecondary),
+                    ),
+                ],
+              ],
+            ),
+          ),
+        ),
+
+        const Gap(18),
+
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 14,
+            childAspectRatio: 3.8,
+          ),
+          itemBuilder: (context, index) {
+            return _StatusLegend(item: items[index]);
+          },
+        ),
+
+        if (other > 0) ...[
+          const Gap(12),
+          _StatusLegend(
+            item: DashboardStatItem(
+              title: 'Kategori lainnya',
+              value: other,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  // Mode ringkasan: setiap item merupakan statistik independen.
+  Widget _buildSummary() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          chartTitle,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const Gap(12),
+
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.75,
+          ),
+          itemBuilder: (context, index) {
+            return _SummaryStatCard(item: items[index]);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _TotalHeader extends StatelessWidget {
+  final int total;
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool isLoading;
+
+  const _TotalHeader({
+    required this.total,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.isLoading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.09),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 24),
+        ),
+        const Gap(13),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.09),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(totalIcon, color: AppColors.primary, size: 24),
-              ),
-              const Gap(13),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      totalTitle,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const Gap(2),
-                    Text(
-                      '$total',
-                      style: const TextStyle(
-                        fontSize: 28,
-                        height: 1.1,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      totalSubtitle,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
+              const Gap(2),
+              Text(
+                '$total',
+                style: const TextStyle(
+                  fontSize: 28,
+                  height: 1.1,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
                 ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  isLoading ? 'Memperbarui' : 'Ringkasan',
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
+              ),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
           ),
-
-          const Gap(22),
-
-          // Grafik distribusi
-          Text(
-            chartTitle,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const Gap(12),
-
-          ClipRRect(
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(20),
-            child: SizedBox(
-              height: 13,
-              child: Row(
-                children: [
-                  if (chartTotal == 0)
-                    Expanded(child: Container(color: AppColors.border))
-                  else ...[
-                    ...items
-                        .where((item) => item.value > 0)
-                        .map(
-                          (item) => Expanded(
-                            flex: item.value,
-                            child: Container(color: item.color),
-                          ),
-                        ),
-                    if (other > 0)
-                      Expanded(
-                        flex: other,
-                        child: Container(color: AppColors.textSecondary),
-                      ),
-                  ],
-                ],
-              ),
+          ),
+          child: Text(
+            isLoading ? 'Memperbarui' : 'Ringkasan',
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
             ),
           ),
-
-          const Gap(18),
-
-          // Legenda
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: items.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 14,
-              childAspectRatio: 3.8,
-            ),
-            itemBuilder: (context, index) {
-              return _StatusLegend(item: items[index]);
-            },
-          ),
-
-          if (other > 0) ...[
-            const Gap(12),
-            _StatusLegend(
-              item: DashboardStatItem(
-                title: 'Kategori lainnya',
-                value: other,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -264,6 +336,61 @@ class _StatusLegend extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _SummaryStatCard extends StatelessWidget {
+  final DashboardStatItem item;
+
+  const _SummaryStatCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: item.color.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: item.color.withValues(alpha: 0.13)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(
+                item.icon ?? Icons.analytics_rounded,
+                size: 17,
+                color: item.color,
+              ),
+              const Gap(6),
+              Expanded(
+                child: Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Text(
+            '${item.value}',
+            style: TextStyle(
+              fontSize: 23,
+              height: 1.1,
+              fontWeight: FontWeight.w800,
+              color: item.color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

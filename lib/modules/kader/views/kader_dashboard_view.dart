@@ -57,7 +57,12 @@ class KaderDashboardView extends GetView<KaderDashboardController> {
                     delegate: SliverChildListDelegate([
                       const KaderDashboardHero(),
                       const SizedBox(height: 26),
-                      KaderDashboardStatistics(data: data),
+                      KaderDashboardStatistics(
+                        totalWarga: data.statistics.totalWarga,
+                        totalKegiatan: data.statistics.totalKegiatan,
+                        kunjunganHariIni: data.statistics.kunjunganHariIni,
+                        antreanMenunggu: data.statistics.antreanMenunggu,
+                      ),
                       const SizedBox(height: 26),
                       KaderPosyanduSection(data: data),
                     ]),

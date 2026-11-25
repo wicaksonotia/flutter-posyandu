@@ -7,7 +7,7 @@ class AuthService {
   /// Mengambil data pengguna yang sedang login.
 
   Future<Map<String, dynamic>> me() async {
-    final response = await _dio.get('/auth/me');
+    final response = await _dio.get('/me');
     final result = Map<String, dynamic>.from(response.data);
 
     if (result['success'] != true || result['data'] is! Map) {
